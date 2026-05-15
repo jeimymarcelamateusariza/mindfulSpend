@@ -1,6 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { ComboboxCustom } from "@/components/ui/comboboxCustom";
-import { useState } from "react";
+import { useReducer, useState } from "react";
+
+import {
+  getInitialState,
+  mindfulSpendReducer,
+} from "@/view/reducer/mindfulSpendReducer";
 
 const categorias = [
   { value: "food", label: "Comida" },
@@ -18,26 +23,43 @@ type Expense = {
 };
 
 export const MindfulSpend = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [state, dispatch] = useReducer(mindfulSpendReducer, getInitialState());
+
   const [inputValue, setInputValue] = useState("");
   const [nameValue, setNameValue] = useState("");
   const [category, setCategory] = useState("");
+
+  // const [expenses, setExpenses] = useState<Expense[]>([]);
+  // const [inputValue, setInputValue] = useState("");
+  // const [nameValue, setNameValue] = useState("");
+  // const [category, setCategory] = useState("");
 
   //Agregar un gasto a la lista y actualizar el valor final
   const addExpense = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newExpense = {
-      id: Date.now().toString(),
-      dateValue: new Date(),
-      name: nameValue,
-      category: category,
-      value: parseFloat(inputValue),
-    };
+    dispatch({
+      type: "ADD_EXPENSE",
+      payload: {
+        id: Date.now().toString(),
+        name: nameValue,
+        category: category,
+        value: parseFloat(inputValue),
+        dateValue: new Date(),
+      },
+    });
+
+    // const newExpense = {
+    //   id: Date.now().toString(),
+    //   dateValue: new Date(),
+    //   name: nameValue,
+    //   category: category,
+    //   value: parseFloat(inputValue),
+    // };
 
     //console.log("Nuevo gasto creado: ", newExpense);
 
-    setExpenses([...expenses, newExpense]);
+    // setExpenses([...expenses, newExpense]);
     //console.log("Gastos antes de agregar: ", expenses);
 
     //console.log("Gastos después de agregar: ", [...expenses, newExpense]);
@@ -51,12 +73,13 @@ export const MindfulSpend = () => {
     //console.log("Eliminando" + id);
     //console.log("Gastos antes de eliminar: ", expenses);
 
-    const updateExpenses = expenses.filter((expense) => expense.id !== id);
+    dispatch({
+      type: "DELETE_EXPENSE",
+      payload: id,
+    });
     //console.log("Gastos después de eliminar: ", updateExpenses);
-    setExpenses(updateExpenses);
+    // setExpenses(updateExpenses);
   };
-
-  //Función de actualizar
 
   return (
     <>
@@ -148,7 +171,7 @@ export const MindfulSpend = () => {
                 </div>
               </div>
               <div className="space-y-4">
-                {expenses.length === 0 ? (
+                {state.expenses.length === 0 ? (
                   <div className="flex flex-col items-center gap-4 py-16">
                     <span
                       className="material-symbols-outlined text-[48px] text-outline"
@@ -162,7 +185,7 @@ export const MindfulSpend = () => {
                   </div>
                 ) : (
                   <div>
-                    {expenses.map((expense) => (
+                    {state.expenses.map((expense) => (
                       <div
                         key={expense.id}
                         className="flex items-center justify-between p-4 rounded-xl bg-surface hover:bg-primary-container/10 transition-colors group"
